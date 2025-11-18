@@ -177,16 +177,13 @@ importlib.reload(utils)
 
 
 from functools import reduce
-# List of all the DataFrames to be merged
-dataframes = [h_nord, df_sbil_lagged, power_curve] #mi1_volumes_nord  mgp_volumes_nord,
-# Use reduce to merge all DataFrames on 'ORAINI'
-df_nord_h_project = reduce(lambda left, right: pd.merge(left, right, on='ORAINI', how='outer'), dataframes)
+# Load the prebuilt dataset from CSV instead of assembling it on the fly
+df_nord_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data', 'df_nord_h_port.csv'))
+df_nord = pd.read_csv(df_nord_path, parse_dates=['ORAINI'])
+df_nord = df_nord.set_index('ORAINI')
 
-#df_nord_h = df_nord.drop(columns="MACROZONA")
-df_nord_h_project = df_nord_h_project[df_nord_h_project.index >= '2024-08-27']
-
-
-df_nord = df_nord_h_project
+# Keep only the most recent observations used for training/prediction
+df_nord = df_nord[df_nord.index >= '2024-08-27']
 
 # Check for duplicate timestamps in the index and remove duplicates
 df_nord = df_nord[~df_nord.index.duplicated(keep='first')]
